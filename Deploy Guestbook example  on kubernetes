@@ -1,0 +1,107 @@
+controlplane $ mkdir -p /root/tutorial; cd /root/tutorial; launch.sh
+Waiting for Kubernetes to start...
+Kubernetes started
+controlplane $ 
+controlplane $ 
+controlplane $ kubectl cluster-info
+Kubernetes master is running at https://10.0.0.43:6443
+KubeDNS is running at https://10.0.0.43:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+controlplane $ kubectl get nodes
+NAME           STATUS     ROLES    AGE   VERSION
+controlplane   NotReady   master   18s   v1.14.0
+controlplane $ kubectl create -f redis-master-controller.yaml
+kubectl create -f redis-master-controller.yaml
+replicationcontroller/redis-master created
+controlplane $ kubectl create -f redis-master-controller.yaml
+Error from server (AlreadyExists): error when creating "redis-master-controller.yaml": replicationcontrollers "redis-master" already exists
+controlplane $ kubectl get rc
+NAME           DESIRED   CURRENT   READY   AGE
+redis-master   1         1         1       8s
+controlplane $ kubectl get pods
+NAME                 READY   STATUS    RESTARTS   AGE
+redis-master-9lccb   1/1     Running   0          15s
+controlplane $ kubectl create -f redis-master-service.yaml
+service/redis-master created
+controlplane $ kubectl get services
+kubectl get services
+NAME           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+kubernetes     ClusterIP   10.96.0.1       <none>        443/TCP    54s
+redis-master   ClusterIP   10.105.213.35   <none>        6379/TCP   6s
+controlplane $ kubectl get services
+NAME           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+kubernetes     ClusterIP   10.96.0.1       <none>        443/TCP    54s
+redis-master   ClusterIP   10.105.213.35   <none>        6379/TCP   6s
+controlplane $ kubectl describe services redis-master
+Name:              redis-master
+Namespace:         default
+Labels:            name=redis-master
+Annotations:       <none>
+Selector:          name=redis-master
+Type:              ClusterIP
+IP:                10.105.213.35
+Port:              <unset>  6379/TCP
+TargetPort:        6379/TCP
+Endpoints:         10.88.0.3:6379
+Session Affinity:  None
+Events:            <none>
+controlplane $ kubectl create -f redis-slave-controller.yaml
+replicationcontroller/redis-slave created
+controlplane $ kubectl get rc
+NAME           DESIRED   CURRENT   READY   AGE
+redis-master   1         1         1       48s
+redis-slave    2         2         2       5s
+controlplane $ kubectl create -f redis-slave-service.yaml
+service/redis-slave created
+controlplane $ kubectl get services
+NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+kubernetes     ClusterIP   10.96.0.1        <none>        443/TCP    82s
+redis-master   ClusterIP   10.105.213.35    <none>        6379/TCP   34s
+redis-slave    ClusterIP   10.107.239.172   <none>        6379/TCP   3s
+controlplane $ kubectl create -f frontend-controller.yaml
+kubectl create -f frontend-controller.yaml
+replicationcontroller/frontend created
+controlplane $ kubectl create -f frontend-controller.yaml
+Error from server (AlreadyExists): error when creating "frontend-controller.yaml": replicationcontrollers "frontend" already exists
+controlplane $ kubectl get rc
+NAME           DESIRED   CURRENT   READY   AGE
+frontend       3         3         3       3s
+redis-master   1         1         1       65s
+redis-slave    2         2         2       22s
+controlplane $ kubectl get pods
+NAME                 READY   STATUS    RESTARTS   AGE
+frontend-jdlsg       1/1     Running   0          6s
+frontend-sfqfc       1/1     Running   0          6s
+frontend-slxsr       1/1     Running   0          6s
+redis-master-9lccb   1/1     Running   0          68s
+redis-slave-85qfn    1/1     Running   0          25s
+redis-slave-wqshz    1/1     Running   0          25s
+controlplane $ kubectl create -f frontend-service.yaml
+service/frontend created
+controlplane $ kubectl get services
+NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+frontend       NodePort    10.97.82.197     <none>        80:30080/TCP   3s
+kubernetes     ClusterIP   10.96.0.1        <none>        443/TCP        101s
+redis-master   ClusterIP   10.105.213.35    <none>        6379/TCP       53s
+redis-slave    ClusterIP   10.107.239.172   <none>        6379/TCP       22s
+controlplane $ kubectl get pods
+NAME                 READY   STATUS    RESTARTS   AGE
+frontend-jdlsg       1/1     Running   0          20s
+frontend-sfqfc       1/1     Running   0          20s
+frontend-slxsr       1/1     Running   0          20s
+redis-master-9lccb   1/1     Running   0          82s
+redis-slave-85qfn    1/1     Running   0          39s
+redis-slave-wqshz    1/1     Running   0          39s
+controlplane $ kubectl get pods
+NAME                 READY   STATUS    RESTARTS   AGE
+frontend-jdlsg       1/1     Running   0          27s
+frontend-sfqfc       1/1     Running   0          27s
+frontend-slxsr       1/1     Running   0          27s
+redis-master-9lccb   1/1     Running   0          89s
+redis-slave-85qfn    1/1     Running   0          46s
+redis-slave-wqshz    1/1     Running   0          46s
+controlplane $ kubectl describe service frontend | grep NodePort
+Type:                     NodePort
+NodePort:                 <unset>  30080/TCP
+controlplane $ 
