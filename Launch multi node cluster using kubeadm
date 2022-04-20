@@ -1,0 +1,723 @@
+controlplane $ kubeadm init --token=102952.1a7dd4cc8d1f4cc5 --kubernetes-versionsion -o short) 
+[init] Using Kubernetes version: v1.14.0
+[preflight] Running pre-flight checks
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Activating the kubelet service
+[certs] Using certificateDir folder "/etc/kubernetes/pki"
+[certs] Generating "etcd/ca" certificate and key
+[certs] Generating "etcd/peer" certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [controlplane localhost] and IPs [10.0.0.14 127.0.0.1 ::1]
+[certs] Generating "etcd/healthcheck-client" certificate and key
+[certs] Generating "etcd/server" certificate and key
+[certs] etcd/server serving cert is signed for DNS names [controlplane localhost] and IPs [10.0.0.14 127.0.0.1 ::1]
+[certs] Generating "apiserver-etcd-client" certificate and key
+[certs] Generating "ca" certificate and key
+[certs] Generating "apiserver-kubelet-client" certificate and key
+[certs] Generating "apiserver" certificate and key
+[certs] apiserver serving cert is signed for DNS names [controlplane kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 10.0.0.14]
+[certs] Generating "front-proxy-ca" certificate and key
+[certs] Generating "front-proxy-client" certificate and key
+[certs] Generating "sa" key and public key
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+[kubeconfig] Writing "admin.conf" kubeconfig file
+[kubeconfig] Writing "kubelet.conf" kubeconfig file
+[kubeconfig] Writing "controller-manager.conf" kubeconfig file
+[kubeconfig] Writing "scheduler.conf" kubeconfig file
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+[etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
+sudo cp /etc/kubernetes/admin.conf $HOME/
+sudo chown $(id -u):$(id -g) $HOME/admin.conf
+export KUBECONFIG=$HOME/admin.conf
+[apiclient] All control plane components are healthy after 18.505321 seconds
+[upload-config] storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
+[kubelet] Creating a ConfigMap "kubelet-config-1.14" in namespace kube-system with the configuration for the kubelets in the cluster
+[upload-certs] Skipping phase. Please see --experimental-upload-certs
+[mark-control-plane] Marking the node controlplane as control-plane by adding the label "node-role.kubernetes.io/master=''"
+[mark-control-plane] Marking the node controlplane as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]
+[bootstrap-token] Using token: 102952.1a7dd4cc8d1f4cc5
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstrap-token] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstrap-token] creating the "cluster-info" ConfigMap in the "kube-public" namespace
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 10.0.0.14:6443 --token 102952.1a7dd4cc8d1f4cc5 \
+    --discovery-token-ca-cert-hash sha256:6aec150c25f2ee18a7c9a6caa97d31275a0e58d97f2af0d4fbe65d2e45bcda9d 
+controlplane $ sudo cp /etc/kubernetes/admin.conf $HOME/
+controlplane $ sudo chown $(id -u):$(id -g) $HOME/admin.conf
+controlplane $ export KUBECONFIG=$HOME/admin.conf
+controlplane $ cat /opt/weave-kube.yaml
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+      namespace: kube-system
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+    rules:
+      - apiGroups:
+          - ''
+        resources:
+          - pods
+          - namespaces
+          - nodes
+        verbs:
+          - get
+          - list
+          - watch
+      - apiGroups:
+          - networking.k8s.io
+        resources:
+          - networkpolicies
+        verbs:
+          - get
+          - list
+          - watch
+      - apiGroups:
+          - ''
+        resources:
+          - nodes/status
+        verbs:
+          - patch
+          - update
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+    roleRef:
+      kind: ClusterRole
+      name: weave-net
+      apiGroup: rbac.authorization.k8s.io
+    subjects:
+      - kind: ServiceAccount
+        name: weave-net
+        namespace: kube-system
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+      namespace: kube-system
+    rules:
+      - apiGroups:
+          - ''
+        resourceNames:
+          - weave-net
+        resources:
+          - configmaps
+        verbs:
+          - get
+          - update
+      - apiGroups:
+          - ''
+        resources:
+          - configmaps
+        verbs:
+          - create
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+      namespace: kube-system
+    roleRef:
+      kind: Role
+      name: weave-net
+      apiGroup: rbac.authorization.k8s.io
+    subjects:
+      - kind: ServiceAccount
+        name: weave-net
+        namespace: kube-system
+  - apiVersion: apps/v1
+    kind: DaemonSet
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+      namespace: kube-system
+    spec:
+      minReadySeconds: 5
+      selector:
+        matchLabels:
+          name: weave-net
+      template:
+        metadata:
+          labels:
+            name: weave-net
+        spec:
+          containers:
+            - name: weave
+              command:
+                - /home/weave/launch.sh
+              env:
+                - name: IPALLOC_RANGE
+                  value: 10.32.0.0/24
+                - name: HOSTNAME
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: spec.nodeName
+              image: 'docker.io/weaveworks/weave-kube:2.6.0'
+              readinessProbe:
+                httpGet:
+                  host: 127.0.0.1
+                  path: /status
+                  port: 6784
+              resources:
+                requests:
+                  cpu: 10m
+              securityContext:
+                privileged: true
+              volumeMounts:
+                - name: weavedb
+                  mountPath: /weavedb
+                - name: cni-bin
+                  mountPath: /host/opt
+                - name: cni-bin2
+                  mountPath: /host/home
+                - name: cni-conf
+                  mountPath: /host/etc
+                - name: dbus
+                  mountPath: /host/var/lib/dbus
+                - name: lib-modules
+                  mountPath: /lib/modules
+                - name: xtables-lock
+                  mountPath: /run/xtables.lock
+            - name: weave-npc
+              env:
+                - name: HOSTNAME
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: spec.nodeName
+              image: 'docker.io/weaveworks/weave-npc:2.6.0'
+              resources:
+                requests:
+                  cpu: 10m
+              securityContext:
+                privileged: true
+              volumeMounts:
+                - name: xtables-lock
+                  mountPath: /run/xtables.lock
+          hostNetwork: true
+          hostPID: true
+          restartPolicy: Always
+          securityContext:
+            seLinuxOptions: {}
+          serviceAccountName: weave-net
+          tolerations:
+            - effect: NoSchedule
+              operator: Exists
+          volumes:
+            - name: weavedb
+              hostPath:
+                path: /var/lib/weave
+            - name: cni-bin
+              hostPath:
+                path: /opt
+            - name: cni-bin2
+              hostPath:
+                path: /home
+            - name: cni-conf
+              hostPath:
+                path: /etc
+            - name: dbus
+              hostPath:
+                path: /var/lib/dbus
+            - name: lib-modules
+              hostPath:
+                path: /lib/modules
+            - name: xtables-lock
+              hostPath:
+                path: /run/xtables.lock
+                type: FileOrCreate
+      updateStrategy:
+        type: RollingUpdate
+
+controlplane $ cat /opt/weave-kube.yaml
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+      namespace: kube-system
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+    rules:
+      - apiGroups:
+          - ''
+        resources:
+          - pods
+          - namespaces
+          - nodes
+        verbs:
+          - get
+          - list
+          - watch
+      - apiGroups:
+          - networking.k8s.io
+        resources:
+          - networkpolicies
+        verbs:
+          - get
+          - list
+          - watch
+      - apiGroups:
+          - ''
+        resources:
+          - nodes/status
+        verbs:
+          - patch
+          - update
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+    roleRef:
+      kind: ClusterRole
+      name: weave-net
+      apiGroup: rbac.authorization.k8s.io
+    subjects:
+      - kind: ServiceAccount
+        name: weave-net
+        namespace: kube-system
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+      namespace: kube-system
+    rules:
+      - apiGroups:
+          - ''
+        resourceNames:
+          - weave-net
+        resources:
+          - configmaps
+        verbs:
+          - get
+          - update
+      - apiGroups:
+          - ''
+        resources:
+          - configmaps
+        verbs:
+          - create
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+      namespace: kube-system
+    roleRef:
+      kind: Role
+      name: weave-net
+      apiGroup: rbac.authorization.k8s.io
+    subjects:
+      - kind: ServiceAccount
+        name: weave-net
+        namespace: kube-system
+  - apiVersion: apps/v1
+    kind: DaemonSet
+    metadata:
+      name: weave-net
+      annotations:
+        cloud.weave.works/launcher-info: |-
+          {
+            "original-request": {
+              "url": "/k8s/v1.10/net.yaml?k8s-version=v1.16.0",
+              "date": "Mon Oct 28 2019 18:38:09 GMT+0000 (UTC)"
+            },
+            "email-address": "support@weave.works"
+          }
+      labels:
+        name: weave-net
+      namespace: kube-system
+    spec:
+      minReadySeconds: 5
+      selector:
+        matchLabels:
+          name: weave-net
+      template:
+        metadata:
+          labels:
+            name: weave-net
+        spec:
+          containers:
+            - name: weave
+              command:
+                - /home/weave/launch.sh
+              env:
+                - name: IPALLOC_RANGE
+                  value: 10.32.0.0/24
+                - name: HOSTNAME
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: spec.nodeName
+              image: 'docker.io/weaveworks/weave-kube:2.6.0'
+              readinessProbe:
+                httpGet:
+                  host: 127.0.0.1
+                  path: /status
+                  port: 6784
+              resources:
+                requests:
+                  cpu: 10m
+              securityContext:
+                privileged: true
+              volumeMounts:
+                - name: weavedb
+                  mountPath: /weavedb
+                - name: cni-bin
+                  mountPath: /host/opt
+                - name: cni-bin2
+                  mountPath: /host/home
+                - name: cni-conf
+                  mountPath: /host/etc
+                - name: dbus
+                  mountPath: /host/var/lib/dbus
+                - name: lib-modules
+                  mountPath: /lib/modules
+                - name: xtables-lock
+                  mountPath: /run/xtables.lock
+            - name: weave-npc
+              env:
+                - name: HOSTNAME
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: spec.nodeName
+              image: 'docker.io/weaveworks/weave-npc:2.6.0'
+              resources:
+                requests:
+                  cpu: 10m
+              securityContext:
+                privileged: true
+              volumeMounts:
+                - name: xtables-lock
+                  mountPath: /run/xtables.lock
+          hostNetwork: true
+          hostPID: true
+          restartPolicy: Always
+          securityContext:
+            seLinuxOptions: {}
+          serviceAccountName: weave-net
+          tolerations:
+            - effect: NoSchedule
+              operator: Exists
+          volumes:
+            - name: weavedb
+              hostPath:
+                path: /var/lib/weave
+            - name: cni-bin
+              hostPath:
+                path: /opt
+            - name: cni-bin2
+              hostPath:
+                path: /home
+            - name: cni-conf
+              hostPath:
+                path: /etc
+            - name: dbus
+              hostPath:
+                path: /var/lib/dbus
+            - name: lib-modules
+              hostPath:
+                path: /lib/modules
+            - name: xtables-lock
+              hostPath:
+                path: /run/xtables.lock
+                type: FileOrCreate
+      updateStrategy:
+        type: RollingUpdate
+
+controlplane $ kubectl apply -f /opt/weave-kube.yaml
+serviceaccount/weave-net created
+clusterrole.rbac.authorization.k8s.io/weave-net created
+clusterrolebinding.rbac.authorization.k8s.io/weave-net created
+role.rbac.authorization.k8s.io/weave-net created
+rolebinding.rbac.authorization.k8s.io/weave-net created
+daemonset.apps/weave-net created
+controlplane $ kubectl get pod -n kube-system
+NAME                                   READY   STATUS    RESTARTS   AGE
+coredns-fb8b8dccf-clh8h                0/1     Pending   0          2m31s
+coredns-fb8b8dccf-d8cgz                0/1     Pending   0          2m31s
+etcd-controlplane                      1/1     Running   0          80s
+kube-apiserver-controlplane            1/1     Running   0          89s
+kube-controller-manager-controlplane   1/1     Running   0          82s
+kube-proxy-mlbt2                       1/1     Running   0          2m32s
+kube-scheduler-controlplane            1/1     Running   1          104s
+weave-net-vq788                        1/2     Error     1          5s
+controlplane $ kubeadm token list
+TOKEN                     TTL       EXPIRES                USAGES                   DESCRIPTION                                                EXTRA GROUPS
+102952.1a7dd4cc8d1f4cc5   23h       2022-04-21T06:40:29Z   authentication,signing   The default bootstrap token generated by 'kubeadm init'.   system:bootstrappers:kubeadm:default-node-token
+controlplane $ kubectl get nodes
+NAME           STATUS     ROLES    AGE     VERSION
+controlplane   NotReady   master   2m58s   v1.14.0
+controlplane $ kubectl create deployment http --image=katacoda/docker-http-server:latest
+deployment.apps/http created
+controlplane $ kubectl get pods
+NAME                    READY   STATUS    RESTARTS   AGE
+http-7f8cbdf584-xcz25   1/1     Running   0          11s
+controlplane $ kubectl apply -f dashboard.yaml
+secret/kubernetes-dashboard-certs created
+serviceaccount/kubernetes-dashboard created
+role.rbac.authorization.k8s.io/kubernetes-dashboard-minimal created
+rolebinding.rbac.authorization.k8s.io/kubernetes-dashboard-minimal created
+deployment.apps/kubernetes-dashboard created
+service/kubernetes-dashboard created
+controlplane $ kubectl get pods -n kube-system
+NAME                                    READY   STATUS             RESTARTS   AGE
+coredns-fb8b8dccf-clh8h                 1/1     Running            1          3m29s
+coredns-fb8b8dccf-d8cgz                 1/1     Running            1          3m29s
+etcd-controlplane                       1/1     Running            0          2m18s
+kube-apiserver-controlplane             1/1     Running            0          2m27s
+kube-controller-manager-controlplane    1/1     Running            0          2m20s
+kube-proxy-mlbt2                        1/1     Running            0          3m30s
+kube-proxy-q4qxr                        1/1     Running            0          34s
+kube-scheduler-controlplane             1/1     Running            1          2m42s
+kubernetes-dashboard-5f57845f9d-knpl4   1/1     Running            0          4s
+weave-net-2lqbr                         1/2     CrashLoopBackOff   2          34s
+weave-net-vq788                         1/2     CrashLoopBackOff   3          63s
+controlplane $ cat <<EOF | kubectl create -f - 
+> apiVersion: v1
+> kind: ServiceAccount
+> metadata:
+>   name: admin-user
+>   namespace: kube-system
+> ---
+> apiVersion: rbac.authorization.k8s.io/v1beta1
+> kind: ClusterRoleBinding
+> metadata:
+>   name: admin-user
+> roleRef:
+>   apiGroup: rbac.authorization.k8s.io
+>   kind: ClusterRole
+>   name: cluster-admin
+> subjects:
+> - kind: ServiceAccount
+>   name: admin-user
+>   namespace: kube-system
+> EOF
+cat <<EOF | kubectl create -f - 
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kube-system
+EOF
+serviceaccount/admin-user created
+clusterrolebinding.rbac.authorization.k8s.io/admin-user created
+controlplane $ cat <<EOF | kubectl create -f - 
+> apiVersion: v1
+> kind: ServiceAccount
+> metadata:
+>   name: admin-user
+>   namespace: kube-system
+> ---
+> apiVersion: rbac.authorization.k8s.io/v1beta1
+> kind: ClusterRoleBinding
+> metadata:
+>   name: admin-user
+> roleRef:
+>   apiGroup: rbac.authorization.k8s.io
+>   kind: ClusterRole
+>   name: cluster-admin
+> subjects:
+> - kind: ServiceAccount
+>   name: admin-user
+>   namespace: kube-system
+> EOF
+Error from server (AlreadyExists): error when creating "STDIN": serviceaccounts "admin-user" already exists
+Error from server (AlreadyExists): error when creating "STDIN": clusterrolebindings.rbac.authorization.k8s.io "admin-user" already exists
+controlplane $ kubectl -n kube-system describe secret $(kubectl -n kube-system gep admin-user | awk '{print $1}')
+kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
+Name:         admin-user-token-cbzhs
+Namespace:    kube-system
+Labels:       <none>
+Annotations:  kubernetes.io/service-account.name: admin-user
+              kubernetes.io/service-account.uid: 4896c180-c075-11ec-b540-02420a00000e
+
+Type:  kubernetes.io/service-account-token
+
+Data
+====
+ca.crt:     1025 bytes
+namespace:  11 bytes
+token:      eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhZG1pbi11c2VyLXRva2VuLWNiemhzIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImFkbWluLXVzZXIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiI0ODk2YzE4MC1jMDc1LTExZWMtYjU0MC0wMjQyMGEwMDAwMGUiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06YWRtaW4tdXNlciJ9.LqZid7THE9g4ZYF_LJIF0N1aJeSCqKhmUru0WMefcQvgu15q5J4JMT-BEcyEu-D7OTloZUdfqTFF9keO11I8SGvoI-ciZvhFEHeGi_BP1Yeg2sNY96Cwz8-zYU06qigJ1wwVTwlEkEi2tGcHeOW9iBcc43xKIvflZ32B5N2qCLMSH5bvyqBkX_EzDWmFNj79f7vQb4TbhzKznP3xB9HcJ3Bbmq1c_5Yt35Igu5eKfUM5s-v2eZNAM1yMhhSfwdqAv4Bgf5CMmXuRNHETsCH3Go76XFp8a5ktNFLd0VAyEsTvhXdEjTWK_PsmNvmNtTs5l3Jj6bIhT_-j2pnMvIl8sA
+controlplane $ kubectl -n kube-system describe secret $(kubectl -n kube-system gep admin-user | awk '{print $1}')
+Name:         admin-user-token-cbzhs
+Namespace:    kube-system
+Labels:       <none>
+Annotations:  kubernetes.io/service-account.name: admin-user
+              kubernetes.io/service-account.uid: 4896c180-c075-11ec-b540-02420a00000e
+
+Type:  kubernetes.io/service-account-token
+
+Data
+====
+ca.crt:     1025 bytes
+namespace:  11 bytes
+token:      eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2V
