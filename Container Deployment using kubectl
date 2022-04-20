@@ -1,0 +1,93 @@
+$ minikube start --wait=false
+* minikube v1.8.1 on Ubuntu 18.04
+* Using the none driver based on user configuration
+* Running on localhost (CPUs=2, Memory=2460MB, Disk=145651MB) ...
+* OS release is Ubuntu 18.04.4 LTS
+* Preparing Kubernetes v1.17.3 on Docker 19.03.6 ...
+  - kubelet.resolv-conf=/run/systemd/resolve/resolv.conf
+* Launching Kubernetes ... 
+* Enabling addons: default-storageclass, storage-provisioner
+* Configuring local host environment ...
+* Done! kubectl is now configured to use "minikube"
+$ kubectl get nodes
+NAME       STATUS     ROLES    AGE   VERSION
+minikube   NotReady   master   17s   v1.17.3
+$ kubectl run http --image=katacoda/docker-http-server:latest --replicas=1
+kubectl run --generator=deployment/apps.v1 is DEPRECATED and will be removed in a future version. Use kubectl run --generator=run-pod/v1 or kubectl create instead.
+deployment.apps/http created
+$ kubectl get deployments
+NAME   READY   UP-TO-DATE   AVAILABLE   AGE
+http   1/1     1            1           7s
+$ kubectl describe deployment http
+Name:                   http
+Namespace:              default
+CreationTimestamp:      Wed, 20 Apr 2022 09:12:44 +0000
+Labels:                 run=http
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               run=http
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  run=http
+  Containers:
+   http:
+    Image:        katacoda/docker-http-server:latest
+    Port:         <none>
+    Host Port:    <none>
+    Environment:  <none>
+    Mounts:       <none>
+  Volumes:        <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   http-774bb756bb (1/1 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  16s   deployment-controller  Scaled up replica set http-774bb756bb to 1
+$ kubectl expose deployment http --external-ip="10.0.0.15" --port=8000 --target-port=80
+service/http exposed
+$ curl http://10.0.0.15:8000
+<h1>This request was processed by host: http-774bb756bb-h5xl5</h1>
+$ kubectl run httpexposed --image=katacoda/docker-http-server:latest --replicas=1 --port=80 --hostport=8001
+kubectl run --generator=deployment/apps.v1 is DEPRECATED and will be removed in a future version. Use kubectl run --generator=run-pod/v1 or kubectl create instead.
+deployment.apps/httpexposed created
+$ curl http://10.0.0.15:8001
+curl: (7) Failed to connect to 10.0.0.15 port 8001: Connection refused
+$ kubectl get svc
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+http         ClusterIP   10.108.52.53   10.0.0.15     8000/TCP   18s
+kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP    63s
+$ docker ps | grep httpexposed
+dff6d5a8f5da        katacoda/docker-http-server   "/app"                   10 seconds ago       Up 9 seconds                               k8s_httpexposed_httpexposed-68cb8c8d4-pj76k_default_271abf35-4250-4286-b5d3-d462c4e1b125_0
+2eec22a9ea01        k8s.gcr.io/pause:3.1          "/pause"                 13 seconds ago       Up 11 seconds       0.0.0.0:8001->80/tcp   k8s_POD_httpexposed-68cb8c8d4-pj76k_default_271abf35-4250-4286-b5d3-d462c4e1b125_0
+$ kubectl scale --replicas=3 deployment http
+deployment.apps/http scaled
+$ kubectl get pods
+NAME                          READY   STATUS              RESTARTS   AGE
+http-774bb756bb-h5xl5         1/1     Running             0          57s
+http-774bb756bb-kj554         0/1     ContainerCreating   0          2s
+http-774bb756bb-psg2s         0/1     ContainerCreating   0          2s
+httpexposed-68cb8c8d4-pj76k   1/1     Running             0          23s
+$ kubectl describe svc http
+Name:              http
+Namespace:         default
+Labels:            run=http
+Annotations:       <none>
+Selector:          run=http
+Type:              ClusterIP
+IP:                10.108.52.53
+External IPs:      10.0.0.15
+Port:              <unset>  8000/TCP
+TargetPort:        80/TCP
+Endpoints:         172.18.0.4:80,172.18.0.6:80,172.18.0.7:80
+Session Affinity:  None
+Events:            <none>
+$ curl http://10.0.0.15:8000
+<h1>This request was processed by host: http-774bb756bb-psg2s</h1>
+$ 
