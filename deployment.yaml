@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp1
+  template:
+    metadata:
+      labels:
+        app: webapp1
+    spec:
+      containers:
+      - name: webapp1
+        image: katacoda/docker-http-server:latest
+        ports:
+        - containerPort: 80
+        
+        
+        ##COMMANDS IMPLEMENTATIONS#########
+        
+        
+$  minikube start --wait=false
+* minikube v1.8.1 on Ubuntu 18.04
+* Using the none driver based on user configuration
+* Running on localhost (CPUs=2, Memory=2460MB, Disk=145651MB) ...
+* OS release is Ubuntu 18.04.4 LTS
+* Preparing Kubernetes v1.17.3 on Docker 19.03.6 ...
+  - kubelet.resolv-conf=/run/systemd/resolve/resolv.conf
+* Launching Kubernetes ... 
+* Enabling addons: default-storageclass, storage-provisioner
+* Configuring local host environment ...
+* Done! kubectl is now configured to use "minikube"
+$ 
+$ 
+$ kubectl create -f deployment.yaml
+deployment.apps/webapp1 created
+$ kubectl get deployment
+NAME      READY   UP-TO-DATE   AVAILABLE   AGE
+webapp1   1/1     1            1           19s
+$ kubectl describe deployment webapp1
+Name:                   webapp1
+Namespace:              default
+CreationTimestamp:      Wed, 20 Apr 2022 06:52:13 +0000
+Labels:                 <none>
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=webapp1
+Replicas:               1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=webapp1
+  Containers:
+   webapp1:
+    Image:        katacoda/docker-http-server:latest
+    Port:         80/TCP
+    Host Port:    0/TCP
+    Environment:  <none>
+    Mounts:       <none>
+  Volumes:        <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   webapp1-6b54fb89d9 (1/1 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  26s   deployment-controller  Scaled up replica set webapp1-6b54fb89d9 to 1
