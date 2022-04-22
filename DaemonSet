@@ -1,0 +1,35 @@
+root@host01 ~]# openssl genrsa -aes256 -out ca-key.pem 2048
+Generating RSA private key, 2048 bit long modulus
+....................................................................+++
+....+++
+e is 65537 (0x010001)
+Enter pass phrase for ca-key.pem:
+Verifying - Enter pass phrase for ca-key.pem:
+Verify failure
+User interface error
+140698042085312:error:2807106B:UI routines:UI_process:processing error:crypto/ui/ui_lib.c:493:while reading strings
+140698042085312:error:0906906F:PEM routines:PEM_ASN1_write_bio:read key:crypto/pem/pem_lib.c:336:
+[root@host01 ~]# openssl genrsa -out server-key.pem 4096
+Generating RSA private key, 4096 bit long modulus
+......................++
+..............................................................................................................................................................................................................................................++
+e is 65537 (0x010001)
+[root@host01 ~]# openssl req -subj "/CN=$HOST" -sha256 -new -key server-key.pem -out server.csr
+problems making Certificate Request
+140496370184128:error:0D07A098:asn1 encoding routines:ASN1_mbstring_ncopy:string too short:crypto/asn1/a_mbstr.c:102:minsize=1
+[root@host01 ~]# sudo nohup docker daemon --tlsverify --tlscacert=ca.pem --tlscert=server-cert.pem --tlskey=server-key.pem -H=0.0.0.0:2376 </dev/null &>/dev/null &
+[1] 481
+[root@host01 ~]# docker --tlsverify --tlscacert=ca.pem --tlscert=cert.pem --tlskey=key.pem -H=$HOST:2376 version
+could not read CA certificate "ca.pem": open ca.pem: no such file or directory
+[1]+  Exit 127                sudo nohup docker daemon --tlsverify --tlscacert=ca.pem --tlscert=server-cert.pem --tlskey=server-key.pem -H=0.0.0.0:2376 < /dev/null &> /dev/null
+[root@host01 ~]# docker --tlsverify --tlscacert=ca.pem --tlscert=cert.pem --tlskey=key.pem -H=$HOST:2376 version
+could not read CA certificate "ca.pem": open ca.pem: no such file or directory
+[root@host01 ~]# curl -k https://docker:2376/ping
+curl -k https://docker:2376/ping
+curl: (6) Could not resolve host: docker
+[root@host01 ~]# curl -k https://docker:2376/ping
+curl: (6) Could not resolve host: docker
+[root@host01 ~]# curl https://docker:2376/ping \
+>   --cacert ca.pem \
+>   --cert cert.pem \
+>   --key key.pem
